@@ -1,11 +1,16 @@
 import { Col, Input, Row } from "antd";
 import fetchJsonp from "fetch-jsonp";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { useRef } from "react/cjs/react.development";
 import FlickrCard from "../../../components/FlickrCard/FlickrCard";
+import style from "./Gallery.module.less";
+
+const { Search } = Input;
 
 const Gallery = () => {
   const [pictures, setPictures] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const searchRef = useRef("NOT-CHANGED");
 
   const updatePictures = (items) => {
     const cardsData = items.map((item) => {
@@ -19,6 +24,10 @@ const Gallery = () => {
         link: item.link,
       };
     });
+    if (searchRef.current === "CHANGED") {
+      searchRef.current = "NOT-CHANGED";
+      setPictures(cardsData);
+    }
     setPictures((prevState) => [...prevState, ...cardsData]);
   };
 
@@ -32,8 +41,9 @@ const Gallery = () => {
       .catch(() => console.log("SEARCH_FAILURE"));
   }, [searchTerm]);
 
-  const search = (e) => {
-    setSearchTerm(e.target.value);
+  const search = (value) => {
+    searchRef.current = "CHANGED";
+    setSearchTerm(value);
   };
 
   const handleScroll = useCallback(() => {
@@ -61,10 +71,17 @@ const Gallery = () => {
     <>
       <Row align={"middle"} justify={"center"}>
         <Col span={24}>
-          {/* <Row align={"middle"} justify={"center"} gutter={[24, 24]}>
-            <Input placeholder="search pictures" onChange={search} />
-          </Row> */}
           <Row align={"middle"} justify={"center"} gutter={[24, 24]}>
+            <Search
+              className={style.search}
+              placeholder="search pictures"
+              allowClear
+              enterButton="Search"
+              size="large"
+              onSearch={search}
+            />
+          </Row>
+          <Row align={"top"} justify={"center"} gutter={[24, 24]}>
             {pictures.map((picture, index) => {
               return (
                 <Col key={index}>
